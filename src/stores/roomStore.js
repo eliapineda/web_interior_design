@@ -81,7 +81,30 @@ export const useRoomStore = defineStore("roomStore", {
   }),
   actions: {
     //add item on map
+    addFurnitureOnMap({type, position}){
+      const newId = `${type}_${Date.now()}`;
+      const furniture = {
+        "id": newId,
+        "position": {
+          x: position.x,
+          y: position.y,
+          z: position.z
+        }
+      }
+      this.furnitureOnMap.push(furniture);
+      console.log(furniture, "added")
+    },
+    //update item on map
+    updateFurnitureOnMap(){
+
+    },
     //delete item on map
+    deleteFurnitureOnMap(furniture){
+      
+    },
     //delete all items on map
+    deleteAllFurnitureOnMap(furniture){
+
+    },
   },
 });

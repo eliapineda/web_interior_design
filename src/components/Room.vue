@@ -1,6 +1,6 @@
 <template>
   <div ref="container" class="h-full w-full">
-    <canvas ref="canvas" @dragover.prevent @drop="handleDrop"></canvas>
+    <canvas ref="canvas" @dragover.prevent @drop="handleDrop" @click="handeClick"></canvas>
   </div>
 </template>
 <script setup>
@@ -14,6 +14,7 @@ const canvas = ref(null);
 const container = ref(null);
 const roomStore = useRoomStore();
 const loader = new GLTFLoader();
+const selectedFurniture = ref(null);
 
 let scene, camera, renderer, floor;
 let raycaster = new THREE.Raycaster();
@@ -132,7 +133,24 @@ const cargarModelo3d = (furniture, coordinate) => {
       const model = gltf.scene;
       model.position.copy(coordinate);
       scene.add(model);
+      roomStore.addFurnitureOnMap({type: furniture.id, position: coordinate});
     }
   )
+}
+
+const handeClick = (event) => {
+  console.log("escena clicada")
+  const rect = canvas.value.getBoundingClientRect();
+  const xInCanva = event.clientX - rect.left;
+  const yInCanva = event.clientY - rect.top;
+  mouse.x = (xInCanva / rect.width) * 2 - 1;
+  mouse.y = -(yInCanva / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(roomStore.furnitureOnMap, true);
+
+  if (intersects.length > 0){
+    const coordinate = intersects[0].point;
+   console.log("entraste")
+  }
 }
 </script>
