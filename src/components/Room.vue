@@ -1,6 +1,11 @@
 <template>
   <div ref="container" class="h-full w-full">
-    <canvas ref="canvas" @dragover.prevent @drop="handleDrop" @click="handeClick"></canvas>
+    <canvas
+      ref="canvas"
+      @dragover.prevent
+      @drop="handleDrop"
+      @click="handeClick"
+    ></canvas>
   </div>
 </template>
 <script setup>
@@ -15,6 +20,7 @@ const container = ref(null);
 const roomStore = useRoomStore();
 const loader = new GLTFLoader();
 const selectedFurniture = ref(null);
+const sceneObjects = {};
 
 let scene, camera, renderer, floor;
 let raycaster = new THREE.Raycaster();
@@ -109,7 +115,7 @@ const handleDrop = (event) => {
   // const furnitureName = event.dataTransfer.getData("furnitureName");
   console.log("objeto dejado");
   const furniture = roomStore.furnitureList.find((f) => f.id === furnitureId);
-  
+
   const rect = canvas.value.getBoundingClientRect();
   const xInCanva = event.clientX - rect.left;
   const yInCanva = event.clientY - rect.top;
@@ -119,7 +125,7 @@ const handleDrop = (event) => {
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObject(floor);
 
-  if (intersects.length > 0){
+  if (intersects.length > 0) {
     const coordinate = intersects[0].point;
     cargarModelo3d(furniture, coordinate);
   }
@@ -127,30 +133,41 @@ const handleDrop = (event) => {
 
 const cargarModelo3d = (furniture, coordinate) => {
   const modelPath = furniture.model;
-  loader.load(
-    modelPath,
-    (gltf) =>{
-      const model = gltf.scene;
-      model.position.copy(coordinate);
-      scene.add(model);
-      roomStore.addFurnitureOnMap({type: furniture.id, position: coordinate});
-    }
-  )
-}
+  loader.load(modelPath, (gltf) => {
+    const model = gltf.scene;
+    model.position.copy(coordinate);
+    scene.add(model);
+    roomStore.addFurnitureOnMap(model);
+    model.userData.instanceId = instanceId;
+    sceneObjects[instanceId] = model;
+  });
+};
 
 const handeClick = (event) => {
-  console.log("escena clicada")
+  console.log("escena clicada");
   const rect = canvas.value.getBoundingClientRect();
   const xInCanva = event.clientX - rect.left;
   const yInCanva = event.clientY - rect.top;
   mouse.x = (xInCanva / rect.width) * 2 - 1;
   mouse.y = -(yInCanva / rect.height) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(roomStore.furnitureOnMap, true);
+  const intersects = raycaster.intersectObjects(
+    Object.values(sceneObjects),
+    true,
+  );
 
-  if (intersects.length > 0){
-    const coordinate = intersects[0].point;
-   console.log("entraste")
+  if (intersects.length > 0) {
+    const clickedObject = intersects[0].object;
+    
+    while(
+      clickedObject.parent && !roomStore.furnitureOnMap.includes()
+    )
+
+    // roomStore.selectedItem = instanceId;
   }
+};
+
+const selectItem = (object) => {
+
 }
 </script>
